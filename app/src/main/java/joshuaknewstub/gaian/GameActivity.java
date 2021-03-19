@@ -6,9 +6,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,13 +20,15 @@ import java.util.Map;
 
 public class GameActivity extends AppCompatActivity {
 
-    RelativeLayout pallet;
+    //Layouts
+    FrameLayout pallet;
     ListView elementList;
 
     private int _xDelta;
     private int _yDelta;
-    Map<Integer, Element> map = new HashMap<Integer, Element>();
+    Map<Integer, Element> viewIdElementMap = new HashMap<>();
     ElementAdapter elementAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +40,8 @@ public class GameActivity extends AppCompatActivity {
         resetAdapter();
         elementList.setOnItemClickListener(new itemClickedListener());
     }
+
+
 
     private final class itemClickedListener implements AdapterView.OnItemClickListener {
         @SuppressLint("ClickableViewAccessibility")
@@ -55,14 +60,14 @@ public class GameActivity extends AppCompatActivity {
 
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
-                    RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                    FrameLayout.LayoutParams lParams = (FrameLayout.LayoutParams) view.getLayoutParams();
                     _xDelta = X - lParams.leftMargin;
                     _yDelta = Y - lParams.topMargin;
                     view.bringToFront();
                     break;
 
                 case MotionEvent.ACTION_MOVE:
-                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view
+                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) view
                             .getLayoutParams();
                     layoutParams.leftMargin = X - _xDelta;
                     layoutParams.topMargin = Y - _yDelta;
@@ -84,28 +89,20 @@ public class GameActivity extends AppCompatActivity {
     public void getOnTop(View draggedView) {
         int X = (int) (draggedView.getX() + 125);
         int Y = (int) draggedView.getY() + 125;
-//        Log.e("co-ordinates", "X:" + X + " Y:" + Y);
+
 
         int numOfViews = pallet.getChildCount();
         for (int i = 0; i < numOfViews; i++) {
             View tempView = pallet.getChildAt(i);
             if (tempView.getId() != draggedView.getId()) {
-                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) tempView
+                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) tempView
                         .getLayoutParams();
-
-//                Log.e("co-ordinates", "X:" + X + " Y:" + Y);
-//                Log.e("Left Parames", "" + layoutParams.leftMargin);
-//                Log.e("Left Parames", "" + (layoutParams.leftMargin - layoutParams.rightMargin));
-//                Log.e("Left Parames", "" + layoutParams.topMargin);
-//                Log.e("Left Parames", "" + (layoutParams.topMargin - layoutParams.bottomMargin));
-
 
                 if (X > layoutParams.leftMargin &
                         X < (layoutParams.leftMargin + 250) &
                         Y > layoutParams.topMargin &
                         Y < (layoutParams.topMargin + 250)) {
                 checkIfCombo(draggedView, tempView);
-//                    Toast.makeText(GameActivity.this, "Ontop of", Toast.LENGTH_SHORT).show();
                     break;
                 }
             }
@@ -113,18 +110,20 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public void checkIfCombo(View draggedView, View tempView) {
-        Element element1 = map.get(draggedView.getId());
-        Element element2 = map.get(tempView.getId());
+        Element element1 = viewIdElementMap.get(draggedView.getId());
+        Element element2 = viewIdElementMap.get(tempView.getId());
         for (int i = 0; i < Element.elements.length; i++) {
             if (Element.elements[i].unlockedBy != null) {
                 String element1Name = element1.name;
                 String element2Name = element2.name;
                 if (Arrays.asList(Element.elements[i].unlockedBy).contains(element1Name) &
                         Arrays.asList(Element.elements[i].unlockedBy).contains(element2Name)){
-                    Element.elements[i].unlocked = true;
-                    resetAdapter();
-                    Log.e("Unlocked?", "" + Element.elements[i].unlocked);
-                    Toast.makeText(GameActivity.this, Element.elements[i].name + " unlocked!", Toast.LENGTH_SHORT).show();
+                    if (!Element.elements[i].unlocked) {
+                        Element.elements[i].unlocked = true;
+                        resetAdapter();
+                        Log.e("Unlocked?", "" + Element.elements[i].unlocked);
+                        Toast.makeText(GameActivity.this, Element.elements[i].name + " unlocked!", Toast.LENGTH_SHORT).show();
+                    }
                     pallet.removeView(draggedView);
                     pallet.removeView(tempView);
                     addView(Element.elements[i]);
@@ -139,11 +138,11 @@ public class GameActivity extends AppCompatActivity {
     private void addView(Element element){
         ImageView imageView = new ImageView(GameActivity.this);
         imageView.setImageResource(element.getImageResourceId());
-        RelativeLayout.LayoutParams size = new RelativeLayout.LayoutParams(200, 200);
+        FrameLayout.LayoutParams size = new FrameLayout.LayoutParams(200, 200);
         imageView.setLayoutParams(size);
         imageView.setOnTouchListener(new touchListener());
         imageView.setId(View.generateViewId());
-        map.put(imageView.getId(), element);
+        viewIdElementMap.put(imageView.getId(), element);
         pallet.addView(imageView);
     }
 
@@ -151,6 +150,10 @@ public class GameActivity extends AppCompatActivity {
         elementAdapter = new ElementAdapter(GameActivity.this);
         elementList.setAdapter(elementAdapter);
         elementList.setOnItemClickListener(new itemClickedListener());
+    }
+
+    public void removeAll(View view) {
+        pallet.removeAllViews();
     }
 
 }

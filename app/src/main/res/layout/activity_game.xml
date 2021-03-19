@@ -7,12 +7,29 @@
     android:orientation="horizontal"
     tools:context=".GameActivity">
 
-
-    <RelativeLayout
-        android:id="@+id/pallet"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"/>
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:id="@+id/pallet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            />
+
+
+        <Button
+            android:id="@+id/removeAllButton"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:onClick="removeAll"
+            android:text="@string/remove_all" />
+
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <ListView
         android:id="@+id/element_list"

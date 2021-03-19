@@ -24,14 +24,12 @@ public class Element {
             new Element("Rain", R.raw.rain, false, new String[]{"Air", "Water"})
     };
 
+
     private Element(String name, int imageResourceId, boolean unlocked, String[] unlockedBy){
         this.name = name;
         this.imageResourceId = imageResourceId;
         this.unlocked = unlocked;
         this.unlockedBy = unlockedBy;
-
-
-
     }
 
     @NonNull @Override
