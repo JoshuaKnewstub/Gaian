@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class GameActivity extends AppCompatActivity {
 
@@ -24,10 +25,12 @@ public class GameActivity extends AppCompatActivity {
     FrameLayout pallet;
     ListView elementList;
 
+
     private int _xDelta;
     private int _yDelta;
     Map<Integer, Element> viewIdElementMap = new HashMap<>();
     ElementAdapter elementAdapter;
+    Random random = new Random();
 
 
     @Override
@@ -142,6 +145,9 @@ public class GameActivity extends AppCompatActivity {
         imageView.setLayoutParams(size);
         imageView.setOnTouchListener(new touchListener());
         imageView.setId(View.generateViewId());
+        //TODO breaks the views being over each other
+//        imageView.setX((random.nextInt(pallet.getWidth()-600)) + 300);
+//        imageView.setY((random.nextInt(pallet.getHeight()-600)) + 300);
         viewIdElementMap.put(imageView.getId(), element);
         pallet.addView(imageView);
     }
