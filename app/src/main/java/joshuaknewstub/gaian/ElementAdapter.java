@@ -55,8 +55,8 @@ class ElementAdapter implements ListAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
-        return position;
+    public Element getItem(int position) {
+        return elementArrayList.get(position);
     }
 
     @Override

@@ -1,10 +1,8 @@
 package joshuaknewstub.gaian;
 
 import android.annotation.SuppressLint;
-import android.content.ClipData;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -15,15 +13,19 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 public class GameActivity extends AppCompatActivity {
 
     RelativeLayout pallet;
     ListView elementList;
-    String msg;
-    android.widget.RelativeLayout.LayoutParams layoutParams;
-    ElementAdapter elementAdapter = new ElementAdapter(this);
+
     private int _xDelta;
     private int _yDelta;
+    Map<Integer, Element> map = new HashMap<Integer, Element>();
+    ElementAdapter elementAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,22 +34,16 @@ public class GameActivity extends AppCompatActivity {
 
         pallet = findViewById(R.id.pallet);
         elementList = findViewById(R.id.element_list);
-        elementList.setAdapter(elementAdapter);
+        resetAdapter();
         elementList.setOnItemClickListener(new itemClickedListener());
-
-
     }
 
     private final class itemClickedListener implements AdapterView.OnItemClickListener {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            ImageView imageView = new ImageView(GameActivity.this);
-            imageView.setImageResource(elementAdapter.getImageResourceId(position));
-            RelativeLayout.LayoutParams size = new RelativeLayout.LayoutParams(200, 200);
-            imageView.setLayoutParams(size);
-            imageView.setOnTouchListener(new touchListener());
-            pallet.addView(imageView);
+            Element element = elementAdapter.getItem(position);
+            addView(element);
         }
     }
 
@@ -76,12 +72,85 @@ public class GameActivity extends AppCompatActivity {
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    Toast.makeText(GameActivity.this, "Item Dropped", Toast.LENGTH_SHORT).show();
+                    getOnTop(view);
+//                    Toast.makeText(GameActivity.this, "Item Dropped", Toast.LENGTH_SHORT).show();
                     break;
             }
             pallet.invalidate();
             return true;
         }
+    }
+
+    public void getOnTop(View draggedView) {
+        int X = (int) (draggedView.getX() + 125);
+        int Y = (int) draggedView.getY() + 125;
+//        Log.e("co-ordinates", "X:" + X + " Y:" + Y);
+
+        int numOfViews = pallet.getChildCount();
+        for (int i = 0; i < numOfViews; i++) {
+            View tempView = pallet.getChildAt(i);
+            if (tempView.getId() != draggedView.getId()) {
+                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) tempView
+                        .getLayoutParams();
+
+//                Log.e("co-ordinates", "X:" + X + " Y:" + Y);
+//                Log.e("Left Parames", "" + layoutParams.leftMargin);
+//                Log.e("Left Parames", "" + (layoutParams.leftMargin - layoutParams.rightMargin));
+//                Log.e("Left Parames", "" + layoutParams.topMargin);
+//                Log.e("Left Parames", "" + (layoutParams.topMargin - layoutParams.bottomMargin));
+
+
+                if (X > layoutParams.leftMargin &
+                        X < (layoutParams.leftMargin + 250) &
+                        Y > layoutParams.topMargin &
+                        Y < (layoutParams.topMargin + 250)) {
+                checkIfCombo(draggedView, tempView);
+//                    Toast.makeText(GameActivity.this, "Ontop of", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+            }
+        }
+    }
+
+    public void checkIfCombo(View draggedView, View tempView) {
+        Element element1 = map.get(draggedView.getId());
+        Element element2 = map.get(tempView.getId());
+        for (int i = 0; i < Element.elements.length; i++) {
+            if (Element.elements[i].unlockedBy != null) {
+                String element1Name = element1.name;
+                String element2Name = element2.name;
+                if (Arrays.asList(Element.elements[i].unlockedBy).contains(element1Name) &
+                        Arrays.asList(Element.elements[i].unlockedBy).contains(element2Name)){
+                    Element.elements[i].unlocked = true;
+                    resetAdapter();
+                    Log.e("Unlocked?", "" + Element.elements[i].unlocked);
+                    Toast.makeText(GameActivity.this, Element.elements[i].name + " unlocked!", Toast.LENGTH_SHORT).show();
+                    pallet.removeView(draggedView);
+                    pallet.removeView(tempView);
+                    addView(Element.elements[i]);
+
+                }
+            }
+        }
+
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void addView(Element element){
+        ImageView imageView = new ImageView(GameActivity.this);
+        imageView.setImageResource(element.getImageResourceId());
+        RelativeLayout.LayoutParams size = new RelativeLayout.LayoutParams(200, 200);
+        imageView.setLayoutParams(size);
+        imageView.setOnTouchListener(new touchListener());
+        imageView.setId(View.generateViewId());
+        map.put(imageView.getId(), element);
+        pallet.addView(imageView);
+    }
+
+    private void resetAdapter(){
+        elementAdapter = new ElementAdapter(GameActivity.this);
+        elementList.setAdapter(elementAdapter);
+        elementList.setOnItemClickListener(new itemClickedListener());
     }
 
 }
