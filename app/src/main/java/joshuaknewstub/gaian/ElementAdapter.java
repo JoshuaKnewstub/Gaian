@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
@@ -15,11 +16,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 class ElementAdapter implements ListAdapter {
-    ArrayList<Element> elementArrayList;
+    ArrayList<Element> elementArrayList = new ArrayList<>();
     Context context;
 
     public ElementAdapter(Context context) {
-        this.elementArrayList = new ArrayList<>(Arrays.asList(Element.elements));
+
+        for (int i = 0; i < Element.elements.length; i++){
+            if (Element.elements[i].unlocked){
+                this.elementArrayList.add(Element.elements[i]);
+            }
+        }
         this.context = context;
     }
 
@@ -58,6 +64,14 @@ class ElementAdapter implements ListAdapter {
         return position;
     }
 
+    public String getName(int position){
+        return elementArrayList.get(position).name;
+    }
+
+    public int getImageResourceId(int position){
+        return elementArrayList.get(position).imageResourceId;
+    }
+
     @Override
     public boolean hasStableIds() {
         return false;
@@ -70,22 +84,20 @@ class ElementAdapter implements ListAdapter {
             LayoutInflater layoutInflater = LayoutInflater.from(context);
             convertView = layoutInflater.inflate(R.layout.list_row, null);
 
-            convertView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(context, element.name, Toast.LENGTH_LONG).show();
-                }
-            });
+//            convertView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//
+//                    Toast.makeText(context, element.name, Toast.LENGTH_SHORT).show();
+//                }
+//            });
+
             TextView name = convertView.findViewById(R.id.element_name);
             ImageView image = convertView.findViewById(R.id.element_image);
 
             name.setText(element.name);
             image.setImageResource(element.imageResourceId);
-            if (!element.unlocked){
-                //TODO find a way hide elements
-                convertView.setVisibility(View.GONE);
-                convertView.setLayoutParams(new AbsListView.LayoutParams(-1,1));
-            }
+
         }
         return convertView;
     }
